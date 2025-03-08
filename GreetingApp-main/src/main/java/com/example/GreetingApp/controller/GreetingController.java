@@ -1,5 +1,8 @@
 package com.example.GreetingApp.controller;
 import com.example.GreetingApp.Exception.ResourceNotFoundException;
+import com.example.GreetingApp.dto.GreetingDTO;
+import com.example.GreetingApp.dto.UserDTO;
+import com.example.GreetingApp.interfaces.IGreetingService;
 import com.example.GreetingApp.model.Greeting;
 import com.example.GreetingApp.repository.GreetingRepository;
 import com.example.GreetingApp.service.GreetingServices;
@@ -12,70 +15,37 @@ import java.util.List;
 @RestController
 @RequestMapping("/greetings")
 public class GreetingController {
+    @Autowired
+    IGreetingService greetingService;
 
-    @Autowired
-    private GreetingRepository greetingRepository;
-    @Autowired
-    private GreetingServices greetingService;
-    @GetMapping("/simple")
-    public String getSimpleGreeting() {
-        return greetingService.getSimpleGreeting();
+    @PostMapping("")
+    public GreetingDTO getGreeting(@RequestParam(value = "firstName", defaultValue = "", required = false) String firstName, @RequestParam(value = "lastName", defaultValue = "", required = false) String lastName) {
+        UserDTO user = new UserDTO();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        return new GreetingDTO(greetingService.addGreeting(user));
     }
-    @PostMapping("/savetorepo")
-    public Greeting saveGreeting(
-            @RequestParam(required = false) String firstName,
-            @RequestParam(required = false) String lastName) {
-        return greetingService.saveGreeting(firstName, lastName);
-    }
-    @GetMapping("/findall")
-    public ResponseEntity<?> getAllGreetings() {
-        try {
-            List<Greeting> greetings = greetingRepository.findAll();
-            return ResponseEntity.ok(greetings);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error fetching greetings: " + e.getMessage());
-        }
-    }
-    @PostMapping("/add")
-    public Greeting createGreeting(@RequestBody Greeting greeting) {
-        return greetingRepository.save(greeting);
-    }
-    @PutMapping("update/{id}")
-    public Greeting updateGreeting(@PathVariable Long id, @RequestBody Greeting greetingDetails) {
-        Greeting greeting = greetingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Greeting not found with id " + id));
-        greeting.setMessage(greetingDetails.getMessage());
-        return greetingRepository.save(greeting);
-    }
-    @DeleteMapping("delete/{id}")
-    public ResponseEntity<?> deleteGreeting(@PathVariable Long id) {
-        Greeting greeting = greetingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Greeting not found with id " + id));
-        greetingRepository.delete(greeting);
-        return ResponseEntity.ok().build();
-    }
-    @GetMapping("getId/{id}")
-    public Greeting getGreetingById(@PathVariable Long id) {
+
+    @GetMapping("/{id}")
+    public GreetingDTO getGreetingById(@PathVariable(value = "id") long id) {
         return greetingService.getGreetingById(id);
     }
-    @GetMapping("/repositoryshow/all")
-    public List<Greeting> getGreetings() {
+
+    @GetMapping("/all")
+    public Iterable<GreetingDTO> getAllGreetings() {
         return greetingService.getAllGreetings();
     }
 
-@PutMapping("/updaterepository/{id}")
-public Greeting updateGreetinginRepository(@PathVariable Long id, @RequestBody Greeting updatedGreeting) {
-    return greetingService.updateGreeting(id, updatedGreeting.getMessage());
-}
-    @DeleteMapping("deletefromrepo/{id}")
-    public ResponseEntity<String> deleteGreetingbyrepository(@PathVariable Long id) {
-        try {
-            greetingService.deleteGreetingbyrepo(id);
-            return ResponseEntity.ok("Greeting deleted successfully!");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    @PutMapping("/edit/{id}")
+    public GreetingDTO editGreeting(@PathVariable(value = "id") long id, @RequestParam(value = "firstName", defaultValue = "", required = false) String firstName, @RequestParam(value = "lastName", defaultValue = "", required = false) String lastName) {
+        UserDTO user = new UserDTO();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        return new GreetingDTO(greetingService.editGreeting(id, user));
     }
 
-
+    @DeleteMapping("/delete/{id}")
+    public void deleteGreeting(@PathVariable(value = "id") long id) {
+        greetingService.deleteGreeting(id);
+    }
 }

@@ -1,6 +1,12 @@
 package com.example.GreetingApp.model;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class Greeting {
     @Id
@@ -8,15 +14,4 @@ public class Greeting {
     private Long id;
     @Column(nullable = false)
     private String message;
-
-    public Greeting() {}
-
-    public Greeting(String message) {
-        this.message = message;
-    }
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
 }
